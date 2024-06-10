@@ -7,14 +7,12 @@ from data.db_session import create_session, global_init
 from data.managers import NewsManager
 
 BASE_DIR = pathlib.Path(__file__).parent
-global_init(db_file=f'{BASE_DIR}/local_db/local.sqlite3')
+global_init('data/local_database.sqlite3')
 app = Flask(__name__)
-api_blueprint = Blueprint('api/v1', __name__)
-app.register_blueprint(api_blueprint)
 news_manager = NewsManager()
 
 
-@api_blueprint.route('/recent_news')
+@app.route('/api/v1/recent_news')
 def api_recent_news():
     db_session = create_session()
     recent_news = news_manager.get_recent_news(db_session, limit=20)
@@ -22,7 +20,7 @@ def api_recent_news():
     return jsonified, HTTPStatus.OK
 
 
-@api_blueprint.route('/archive_news')
+@app.route('/api/v1/archive_news')
 def api_archive_news():
     db_session = create_session()
     archive_news = news_manager.get_archive_news(db_session)
