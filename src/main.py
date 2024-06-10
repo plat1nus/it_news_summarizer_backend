@@ -12,6 +12,11 @@ app = Flask(__name__)
 news_manager = NewsManager()
 
 
+@app.route('/api/v1/ping')
+def ping():
+    return '', HTTPStatus.OK
+
+
 @app.route('/api/v1/recent_news')
 def api_recent_news():
     db_session = create_session()
