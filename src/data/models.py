@@ -1,8 +1,16 @@
-from datetime import datetime
+import json
+from datetime import datetime, date
+from json import JSONEncoder
 
 from sqlalchemy import Column, Integer, String, DateTime
 
 from .db_session import SqlAlchemyBase
+
+
+class DateTimeEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
 
 
 class News(SqlAlchemyBase):
@@ -17,3 +25,16 @@ class News(SqlAlchemyBase):
 
     def __repr__(self) -> str:
         return f'<News> {self.id}'
+
+    def jsonify(self) -> dict[str, str]:
+        dt_encoder = DateTimeEncoder()
+        data = {
+            'source': self.source,
+            'sourceLink': self.sourceLink,
+            'title': self.title,
+            'summary': self.summary,
+            'timestamp': self.timestamp
+        }
+
+        jsonified = json.dumps(data, cls=dt_encoder)
+        return jsonified
