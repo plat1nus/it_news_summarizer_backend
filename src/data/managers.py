@@ -14,7 +14,7 @@ class NewsManager:
     ) -> Query[News]:
         return db_session.query(News).order_by(News.timestamp.desc())
 
-    def get_news(
+    def get_recent_news(
         self,
         db_session: Session,
         limit: int | None = None,
