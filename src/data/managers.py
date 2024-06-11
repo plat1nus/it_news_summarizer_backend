@@ -31,6 +31,6 @@ class NewsManager:
         return (
             self
                 .__get_all_data(db_session)
-                .filter(News.timestamp > datetime.now() - timedelta(days=30))
-            )
+                .filter(News.timestamp < datetime.now() - timedelta(days=30))
+            ).all()
     
