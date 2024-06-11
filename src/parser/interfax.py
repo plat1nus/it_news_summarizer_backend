@@ -9,6 +9,7 @@ from data.models import News
 
 def get_new_text_time(article_url: str) -> Tuple[str, datetime]:
     req = requests.get(article_url)
+    req.encoding = 'windows-1251'
     html = req.text
     
     bs_reader = BeautifulSoup(html, 'html.parser')
@@ -35,6 +36,7 @@ def parse_interfax() -> List[News]:
 
     base_url = 'https://www.interfax.ru/digital/'
     req = requests.get(base_url)
+    req.encoding = 'windows-1251'
     html = req.text
 
     soup = BeautifulSoup(html, 'html.parser')
