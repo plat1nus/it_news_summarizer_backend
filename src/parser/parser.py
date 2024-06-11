@@ -1,5 +1,4 @@
 from time import time
-from typing import List
 
 import sys 
 sys.path.append("..")
@@ -21,7 +20,7 @@ class Parser:
         self.__summarizer = summarizer
         self.__news = []
 
-    def parse_news(self):
+    def parse_news(self) -> None:
         result = []
         now = time()
         rbc_news = parse_rbc()
