@@ -1,6 +1,9 @@
 from time import time
 from typing import List
 
+import sys 
+sys.path.append("..")
+
 from rbc import parse_rbc 
 from cnews import parse_cnews
 from data.models import News
