@@ -1,7 +1,7 @@
 from http import HTTPStatus
 import pathlib
 
-from flask import Blueprint, Flask
+from flask import Flask
 
 from data.db_session import create_session, global_init
 from data.managers import NewsManager
