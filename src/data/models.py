@@ -2,7 +2,7 @@ import json
 from datetime import datetime, date
 from json import JSONEncoder
 
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 
 from .db_session import SqlAlchemyBase
 
@@ -22,6 +22,9 @@ class News(SqlAlchemyBase):
     title = Column(String(128), nullable=False)
     summary = Column(String, nullable=False)
     timestamp = Column(DateTime, default=datetime.now)
+    timestamp_parse = Column(DateTime, default=datetime.now)
+    is_competitor = Column(Boolean, default=False)
+    tags = Column(String(128), nullable=True)
 
     def __repr__(self) -> str:
         return f'<News> {self.id}'
