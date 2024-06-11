@@ -29,15 +29,12 @@ class News(SqlAlchemyBase):
     def __repr__(self) -> str:
         return f'<News> {self.id}'
 
-    def jsonify(self) -> dict[str, str]:
-        dt_encoder = DateTimeEncoder()
+    def serialize(self) -> dict[str, str]:
         data = {
             'source': self.source,
             'sourceLink': self.sourceLink,
             'title': self.title,
             'summary': self.summary,
-            'timestamp': self.timestamp
+            'timestamp': self.timestamp.isoformat()
         }
-
-        jsonified = json.dumps(data, cls=dt_encoder)
-        return jsonified
+        return data

@@ -5,12 +5,12 @@ sys.path.append("..")
 
 from summarizer.summarizer import Summarizer
 
-from rbc import parse_rbc 
-from cnews import parse_cnews
+from .rbc import parse_rbc 
+from .cnews import parse_cnews
 from data.models import News
-from interfax import parse_interfax
-from techcrunch import parse_techcrunch
-from severstal import parse_severstal
+from .interfax import parse_interfax
+from .techcrunch import parse_techcrunch
+from .severstal import parse_severstal
 
 from sqlalchemy.orm import Session
 
@@ -39,9 +39,10 @@ class Parser:
         print('techcrunch', time() - now)
         result.extend(techcrunch_news)
 
-        severstal_news = parse_severstal()
-        print('severstal', time() - now)
-        result.extend(severstal_news)
+        # TODO: Fix parsing errors
+        # severstal_news = parse_severstal()
+        # print('severstal', time() - now)
+        # result.extend(severstal_news)
 
         print(f'[INFO] :: Parsed {len(result)} news')
         self.__news = result
@@ -53,6 +54,3 @@ class Parser:
     def process_news(self) -> None:
         for i in range(len(self.__news)):
             self.__news[i].summary = self.__summarizer.summarize(self.__news[i].summary)
-            print(self.__news[i])
-
-    
