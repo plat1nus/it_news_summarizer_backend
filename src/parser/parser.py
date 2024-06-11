@@ -8,8 +8,13 @@ from interfax import parse_interfax
 from techcrunch import parse_techcrunch
 from severstal import parse_severstal
 
+from sqlalchemy.orm import Session
+
 
 class Parser:
+    def __init__(self) -> None:
+        self.__news = []
+
     def parse_news(self) -> List[News]:
         now = time()
         rbc_news = parse_rbc()
@@ -25,4 +30,8 @@ class Parser:
         
         result = rbc_news + interfax_news + techcrunch_news + severstal_news
         print(f'[INFO] :: Parsed {len(result)} news')
-        return result
+        self.__news = result
+
+    def upload_news_to_database(self, db_session: Session) -> None:
+        db_session.bulk_save_objects(self.__news)
+        db_session.commit()
