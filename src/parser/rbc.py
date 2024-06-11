@@ -1,37 +1,15 @@
-import requests
-from bs4 import BeautifulSoup
 from datetime import datetime
-import json
+from typing import List, Tuple
 
-# Определение класса DateTimeEncoder для сериализации объекта datetime в JSON
-class DateTimeEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        return super().default(obj)
+from bs4 import BeautifulSoup
+import requests
 
-# Класс для представления новости
-class News:
-    def __init__(self, source, sourceLink, title, summary, timestamp):
-        self.source = source
-        self.sourceLink = sourceLink
-        self.title = title
-        self.summary = summary
-        self.timestamp = timestamp
+from data.models import News
 
-    def jsonify(self):
-        data = {
-            'source': self.source,
-            'sourceLink': self.sourceLink,
-            'title': self.title,
-            'summary': self.summary,
-            'timestamp': self.timestamp
-        }
-        return data
 
-def get_rbc_news_text_and_time(url):
-    req = requests.get(url)
-    req.encoding = 'utf-8'  # Устанавливаем правильную кодировку
+def get_rbc_news_text_and_time(article_url: str) -> Tuple[str, datetime]:
+    req = requests.get(article_url)
+    req.encoding = 'utf-8'
     html = req.text
 
     soup = BeautifulSoup(html, "html.parser")
@@ -41,7 +19,6 @@ def get_rbc_news_text_and_time(url):
     result = ''
     pub_time = None
 
-    # Извлечение времени публикации
     time_tag = soup.find('time', {'class': 'article__header__date'})
     if time_tag and time_tag.has_attr('datetime'):
         pub_time_str = time_tag['datetime']
@@ -50,16 +27,17 @@ def get_rbc_news_text_and_time(url):
     for div in articles:
         paragraphs = div.find_all('p')
         for p in paragraphs:
-            text = p.get_text(strip=True)  # Получить текст без начальных и конечных пробелов
-            if len(text) > 0 and not text.isspace():  # Игнорировать элементы, состоящие только из пробелов
+            text = p.get_text(strip=True)
+            if len(text) > 0 and not text.isspace():
                 result += '\n' + text 
     return result, pub_time
 
-def parse_rbc():
+
+def parse_rbc() -> List[News]:
     news_list = []
 
     req = requests.get('https://www.rbc.ru/technology_and_media/?utm_source=topline')
-    req.encoding = 'utf-8'  # Устанавливаем правильную кодировку
+    req.encoding = 'utf-8'
     html = req.text
 
     soup = BeautifulSoup(html, "html.parser")
@@ -71,14 +49,7 @@ def parse_rbc():
         link = new['href']
         text, pub_time = get_rbc_news_text_and_time(link)
         
-        # Создаем объект News и добавляем его в список
         news_item = News(source="RBC", sourceLink=link, title=title, summary=text, timestamp=pub_time)
-        news_list.append(news_item.jsonify())
+        news_list.append(news_item)
 
-    # Возвращаем массив новостей в формате JSON
-    return json.dumps(news_list, cls=DateTimeEncoder, ensure_ascii=False, indent=2)
-
-# Пример вызова функции
-
-if __name__ == "__main__":
-    news_json = parse_rbc()
+    return news_list

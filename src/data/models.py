@@ -2,7 +2,7 @@ import json
 from datetime import datetime, date
 from json import JSONEncoder
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, 
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 
 from .db_session import SqlAlchemyBase
 
