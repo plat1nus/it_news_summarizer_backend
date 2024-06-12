@@ -6,6 +6,7 @@ from flask_cors import CORS
 
 from data.db_session import create_session, global_init
 from data.managers import NewsManager
+from duplicate_filter.duplicate_filter import DuplicateFilter
 from parser.parser import Parser
 from summarizer.summarizer import Summarizer
 
@@ -15,14 +16,15 @@ app = Flask(__name__)
 CORS(app)
 news_manager = NewsManager()
 summarizer = Summarizer()
+duplicate_filter = DuplicateFilter()
 
 
 @app.route('/api/v1/recent_news')
 def api_recent_news():
     db_session = create_session()
-    parser = Parser(summarizer=summarizer)
+    parser = Parser(summarizer=summarizer, duplicate_filter=duplicate_filter)
     parser.parse_news()
-    parser.process_news()
+    parser.process_news(db_session)
     parser.upload_news_to_database(db_session)
     recent_news = news_manager.get_recent_news(db_session, limit=20)
     
@@ -37,9 +39,10 @@ def api_recent_news():
 def api_archive_news():
     print('[INFO] :: New request')
     db_session = create_session()
-    parser = Parser(summarizer=summarizer)
+    parser = Parser(summarizer=summarizer, duplicate_filter=duplicate_filter)
     parser.parse_news()
-    parser.process_news()
+    parser.process_news(db_session)
+    parser.filter_out_duplicates(db_session)
     parser.upload_news_to_database(db_session)
     archive_news = news_manager.get_archive_news(db_session)
 
