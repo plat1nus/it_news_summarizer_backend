@@ -33,4 +33,10 @@ class NewsManager:
                 .__get_all_data(db_session)
                 .filter(News.timestamp > datetime.now() - timedelta(days=30))
             )
+
+    def get_pdf(
+            self, 
+            db_session: Session 
+    ) -> None:
+        pass 
     
