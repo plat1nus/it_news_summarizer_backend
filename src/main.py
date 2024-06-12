@@ -42,7 +42,6 @@ def api_archive_news():
     parser = Parser(summarizer=summarizer, duplicate_filter=duplicate_filter)
     parser.parse_news()
     parser.process_news(db_session)
-    parser.filter_out_duplicates(db_session)
     parser.upload_news_to_database(db_session)
     archive_news = news_manager.get_archive_news(db_session)
 

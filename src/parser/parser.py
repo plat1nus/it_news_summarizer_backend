@@ -25,9 +25,10 @@ class Parser:
     def parse_news(self) -> None:
         result = []
         now = time()
-        rbc_news = parse_rbc()
-        print('rbc', time() - now)
-        result.extend(rbc_news)
+        
+        # rbc_news = parse_rbc()
+        # print('rbc', time() - now)
+        # result.extend(rbc_news)
 
         # interfax_news = parse_interfax()
         # print('interfax', time() - now)
@@ -41,10 +42,13 @@ class Parser:
         # print('techcrunch', time() - now)
         # result.extend(techcrunch_news)
 
-        # TODO: Fix parsing errors
-        # severstal_news = parse_severstal()
-        # print('severstal', time() - now)
-        # result.extend(severstal_news)
+        # # TODO: Fix parsing errors
+        # try:
+        #     severstal_news = parse_severstal()
+        #     print('severstal', time() - now)
+        #     result.extend(severstal_news)
+        # except Exception as e:
+        #     print(f'[ERROR] :: {e}')
 
         print(f'[INFO] :: Parsed {len(result)} news')
         self.__news = result
