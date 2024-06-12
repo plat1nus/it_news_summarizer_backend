@@ -55,5 +55,6 @@ class Parser:
         for i in range(len(self.news)):
             self.news[i].summary = self.summarizer.summarize(self.news[i].summary)
             print(self.news[i])
+        return self.news
 
     

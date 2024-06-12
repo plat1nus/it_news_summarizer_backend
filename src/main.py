@@ -2,14 +2,54 @@ from http import HTTPStatus
 import pathlib
 
 from flask import Blueprint, Flask
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 
 from data.db_session import create_session, global_init
 from data.managers import NewsManager
+
+from parser.parser import Parser 
+from data.models import News
 
 BASE_DIR = pathlib.Path(__file__).parent
 global_init('data/local_database.sqlite3')
 app = Flask(__name__)
 news_manager = NewsManager()
+parse = Parser()
+
+def scheduled_parser():
+    parse.parse_news()
+    processed_news = parse.process_news()
+    db_session = create_session()
+    try:
+        # Добавление новостей в базу данных
+        for news_item in processed_news:
+            news_instance = News(
+                title=news_item.title,
+                content=news_item.content,
+                published_date=news_item.published_date,
+                source=news_item.source
+            )
+            news_manager.add_news(db_session, news_instance)
+        
+        # Сохранение изменений
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        print(f"Ошибка при добавлении новостей в базу данных: {e}")
+    finally:
+        # Закрытие сессии
+        db_session.close()
+
+
+scheduler = BackgroundScheduler()
+# Добавляем задачу в расписание
+scheduler.add_job(func=scheduled_parser, trigger="interval", seconds=604800)
+# Запускаем планировщик
+scheduler.start()
+
+# Закрываем планировщик при завершении работы
+atexit.register(lambda: scheduler.shutdown())
 
 
 @app.route('/api/v1/ping')
