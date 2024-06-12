@@ -3,6 +3,9 @@ from time import time
 import sys 
 sys.path.append("..")
 
+from sentence_transformers import SentenceTransformer
+from sqlalchemy.orm import Session
+
 from summarizer.summarizer import Summarizer
 from duplicate_filter.duplicate_filter import DuplicateFilter
 
@@ -12,8 +15,6 @@ from data.models import News
 from .interfax import parse_interfax
 from .techcrunch import parse_techcrunch
 from .severstal import parse_severstal
-
-from sqlalchemy.orm import Session
 
 
 class Parser:
@@ -26,9 +27,9 @@ class Parser:
         result = []
         now = time()
         
-        # rbc_news = parse_rbc()
-        # print('rbc', time() - now)
-        # result.extend(rbc_news)
+        rbc_news = parse_rbc()
+        print('rbc', time() - now)
+        result.extend(rbc_news)
 
         # interfax_news = parse_interfax()
         # print('interfax', time() - now)
@@ -58,9 +59,13 @@ class Parser:
         db_session.commit()
         print(f'[INFO] :: Added {len(self.__news)} news to DB')
 
-    def process_news(self, db_session: Session) -> None:
-        db_news = db_session.query(News).all()
-        self.__news = self.__duplicate_filter.clear_duplicates(db_news=db_news, parsed_news=self.__news)
+    def process_news(self, db_session: Session, model: SentenceTransformer, threshold: float = 0.2, limit: int = 5) -> None:
+
+        self.__news = self.__duplicate_filter.clear_duplicates(parsed_news=self.__news, db_session=db_session, model=model)
+        self.__news = [news for news in self.__news if news.calculate_power() >= threshold]
+        self.__news.sort(key=lambda news: news.calculate_power(), reverse=True)
+        self.__news = self.__news[:limit]
+        print([news.calculate_power() for news in self.__news])
 
         for i in range(len(self.__news)):
             self.__news[i].summary = self.__summarizer.summarize(self.__news[i].summary)

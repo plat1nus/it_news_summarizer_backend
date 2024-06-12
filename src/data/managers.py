@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List
 
-from flask import jsonify
 from sqlalchemy.orm import Session, Query
 
 from .models import News
@@ -12,7 +11,7 @@ class NewsManager:
         self,
         db_session: Session,
     ) -> Query[News]:
-        return db_session.query(News).order_by(News.timestamp.desc())
+        return db_session.query(News).order_by(News.power.desc(), News.timestamp.desc())
 
     def get_recent_news(
         self,
