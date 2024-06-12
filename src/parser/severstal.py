@@ -85,7 +85,7 @@ def parse_severstal() -> List[News]:
                 print(f'Error fetching the URL {href}: {e}')
                 continue
 
-            news_item = News(source="Severstal", sourceLink=href, title=title, summary=text, timestamp=pub_time)
+            news_item = News(source="Северсталь", sourceLink=href, title=title, summary=text, timestamp=pub_time)
             news_list.append(news_item)
 
     return news_list

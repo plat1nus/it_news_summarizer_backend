@@ -54,7 +54,7 @@ def parse_interfax() -> List[News]:
                 href = 'https://www.interfax.ru' + href
             text, pub_time = get_new_text_time(article_url=href)
             
-            news_item = News(source="Interfax", sourceLink=href, title=title, summary=text, timestamp=pub_time)
+            news_item = News(source="Интерфакс", sourceLink=href, title=title, summary=text, timestamp=pub_time)
             news_list.append(news_item)
 
     return news_list
