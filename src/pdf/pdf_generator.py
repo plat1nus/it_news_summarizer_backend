@@ -4,7 +4,6 @@ from typing import List
 from pyhtml2pdf import converter
 
 sys.path.append("..")
-sys.path.append("../parser")
 
 from data.models import News
 from parser.parser import Parser

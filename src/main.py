@@ -10,42 +10,31 @@ from data.managers import NewsManager
 
 from parser.parser import Parser 
 from data.models import News
+from summarizer.summarizer import Summarizer
 
 BASE_DIR = pathlib.Path(__file__).parent
 global_init('data/local_database.sqlite3')
 app = Flask(__name__)
 news_manager = NewsManager()
-parse = Parser()
+parse = Parser(Summarizer)
 
 def scheduled_parser():
     parse.parse_news()
-    processed_news = parse.process_news()
+    parse.process_news()
     db_session = create_session()
     try:
-        # Добавление новостей в базу данных
-        for news_item in processed_news:
-            news_instance = News(
-                title=news_item.title,
-                content=news_item.content,
-                published_date=news_item.published_date,
-                source=news_item.source
-            )
-            news_manager.add_news(db_session, news_instance)
+        parse.upload_news_to_database(db_session)
         
-        # Сохранение изменений
         db_session.commit()
     except Exception as e:
         db_session.rollback()
         print(f"Ошибка при добавлении новостей в базу данных: {e}")
     finally:
-        # Закрытие сессии
         db_session.close()
 
 
 scheduler = BackgroundScheduler()
-# Добавляем задачу в расписание
-scheduler.add_job(func=scheduled_parser, trigger="interval", seconds=604800)
-# Запускаем планировщик
+scheduler.add_job(func=scheduled_parser, trigger="interval", seconds=30)
 scheduler.start()
 
 # Закрываем планировщик при завершении работы

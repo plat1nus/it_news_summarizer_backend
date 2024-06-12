@@ -6,12 +6,12 @@ sys.path.append("..")
 
 from summarizer.summarizer import Summarizer
 
-from rbc import parse_rbc 
-from cnews import parse_cnews
+from .rbc import parse_rbc 
+from .cnews import parse_cnews
 from data.models import News
-from interfax import parse_interfax
-from techcrunch import parse_techcrunch
-from severstal import parse_severstal
+from .interfax import parse_interfax
+from .techcrunch import parse_techcrunch
+from .severstal import parse_severstal
 
 from sqlalchemy.orm import Session
 
@@ -28,9 +28,9 @@ class Parser:
         print('rbc', time() - now)
         result.extend(rbc_news)
 
-        interfax_news = parse_interfax()
-        print('interfax', time() - now)
-        result.extend(interfax_news)
+        # interfax_news = parse_interfax()
+        # print('interfax', time() - now)
+        # result.extend(interfax_news)
 
         # cnews_news = parse_cnews()
         # print('cnews', time() - now)
@@ -55,6 +55,9 @@ class Parser:
         for i in range(len(self.news)):
             self.news[i].summary = self.summarizer.summarize(self.news[i].summary)
             print(self.news[i])
-        return self.news
 
     
+
+if __name__ == '__main__':
+    parse = Parser(Summarizer)
+    parse.parse_news()
