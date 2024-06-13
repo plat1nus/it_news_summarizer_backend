@@ -8,6 +8,7 @@ import atexit
 from dotenv import load_dotenv
 from flask import Flask, Response, send_file
 from flask_cors import CORS
+from sentence_transformers import SentenceTransformer
 
 from data.db_session import create_session, global_init
 from data.managers import NewsManager
@@ -21,7 +22,9 @@ from summarizer.summarizer import Summarizer
 # Backend Setup
 # ===
 BASE_DIR = pathlib.Path(__file__).parent
-PARSER_SPAN_12_HOURS_IN_SECONDS = 60 * 60 * 12
+PARSER_SPAN_12_HOURS_IN_SECONDS = 30
+
+model = SentenceTransformer('all-distilroberta-v1')
 
 load_dotenv()
 catalogue = os.getenv('CATALOGUE', 'invalidcatalogue')
@@ -41,7 +44,7 @@ pdfgenerator = PDFGenerator()
 def scheduled_parser():
     db_session = create_session()
     parsing_job_runner.parse_news()
-    parsing_job_runner.process_news(db_session=db_session)
+    parsing_job_runner.process_news(model, db_session=db_session)
     db_session = create_session()
     try:
         parsing_job_runner.upload_news_to_database(db_session)
