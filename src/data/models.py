@@ -17,7 +17,6 @@ class News(SqlAlchemyBase):
     timestamp = Column(DateTime, default=datetime.now)
     timestamp_parse = Column(DateTime, default=datetime.now)
     is_competitor = Column(Boolean, default=False)
-    tags = Column(String(128), nullable=True)
     power = Column(Float, default=0.0)
 
     def __repr__(self) -> str:
@@ -59,7 +58,6 @@ class News(SqlAlchemyBase):
 
         power = (I ** 2 / W) * (2 ** N)
         self.power = power
-        print(self.title, power)
         return power
 
 

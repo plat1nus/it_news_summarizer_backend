@@ -33,7 +33,7 @@ class NewsManager:
         dtnow = datetime.now()
         for _ in range(8):
             if dtnow.weekday() == 0:
-                return datetime.combine(date=dtnow.date(), time=datetime.min)
+                return datetime.combine(date=dtnow.date(), time=datetime.min.time())
             dtnow = dtnow - timedelta(days=1)
         raise ValueError('[ERROR] :: No monday in the past 8 days')
 
@@ -50,6 +50,7 @@ class NewsManager:
     def get_digest(
         self,
         db_session: Session,
+        limit: int = 10,
     ) -> List[News]:
         current_monday = self.__get_closest_past_monday()
         prev_monday = current_monday - timedelta(days=7)
@@ -58,5 +59,6 @@ class NewsManager:
             self.__get_data(db_session)
                 .filter(News.timestamp_parse >= prev_monday, News.timestamp_parse <= current_monday)
                 .order_by(News.power.desc(), News.timestamp.desc())
+                .limit(limit)
                 .all()
         )

@@ -1,3 +1,4 @@
+from io import BytesIO
 import os
 import json
 import pathlib
@@ -5,14 +6,16 @@ import pathlib
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 from dotenv import load_dotenv
-from flask import Flask, Response
+from flask import Flask, Response, send_file
 from flask_cors import CORS
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 
 from data.db_session import create_session, global_init
 from data.managers import NewsManager
+from data.models import News
 from duplicate_filter.duplicate_filter import DuplicateFilter
-from parser.parser import Parser 
+from parser.parser import Parser
+from pdf_generator.pdf_generator import PDFGenerator
 from summarizer.summarizer import Summarizer
 
 load_dotenv()
@@ -26,13 +29,17 @@ CORS(app)
 news_manager = NewsManager()
 summarizer = Summarizer(catalogue, api_key)
 duplicate_filter = DuplicateFilter()
-model = SentenceTransformer('all-distilroberta-v1')
-parse = Parser(Summarizer)
+# model = SentenceTransformer('all-distilroberta-v1')
+parse = Parser(summarizer=summarizer, duplicate_filter=duplicate_filter)
+pdfgenerator = PDFGenerator()
+PARSER_SPAN_12_HOURS_IN_SECONDS = 60 * 60 * 12
 
 
 def scheduled_parser():
+    db_session = create_session()
     parse.parse_news()
-    parse.process_news()
+    # parse.process_news(db_session=db_session, model=model)
+    parse.process_news(db_session=db_session)
     db_session = create_session()
     try:
         parse.upload_news_to_database(db_session)
@@ -45,20 +52,36 @@ def scheduled_parser():
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=scheduled_parser, trigger="interval", seconds=30)
+scheduler.add_job(func=scheduled_parser, trigger="interval", seconds=PARSER_SPAN_12_HOURS_IN_SECONDS)
 scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
+
+
+@app.route('/api/v1/pdf_recent')
+def api_recent_pdf():
+    print('[INFO] :: New request')
+    db_session = create_session()
+    digest_news = news_manager.get_digest(db_session)
+    pdf = pdfgenerator.generate(digest_news)
+    bytesio = BytesIO(pdf)
+    return send_file(bytesio, as_attachment=True, download_name='fresh_digest.pdf')
+
+
+@app.route('/api/v1/pdf_archive')
+def api_archive_pdf():
+    print('[INFO] :: New request')
+    db_session = create_session()
+    all_news = news_manager.get_archive_news(db_session=db_session)[:10]
+    pdf = pdfgenerator.generate(all_news)
+    bytesio = BytesIO(pdf)
+    return send_file(bytesio, as_attachment=True, download_name='archive_digest.pdf')
 
 
 @app.route('/api/v1/recent_news')
 def api_recent_news():
     print('[INFO] :: New request')
     db_session = create_session()
-    parser = Parser(summarizer=summarizer, duplicate_filter=duplicate_filter)
-    parser.parse_news()
-    parser.process_news(model=model, db_session=db_session)
-    parser.upload_news_to_database(db_session)
-    recent_news = news_manager.get_recent_news(db_session, limit=20)
+    recent_news = news_manager.get_digest(db_session)
     
     return Response(
         mimetype='application/json',
@@ -71,10 +94,6 @@ def api_recent_news():
 def api_archive_news():
     print('[INFO] :: New request')
     db_session = create_session()
-    parser = Parser(summarizer=summarizer, duplicate_filter=duplicate_filter)
-    parser.parse_news()
-    parser.process_news(model=model, db_session=db_session)
-    parser.upload_news_to_database(db_session)
     archive_news = news_manager.get_archive_news(db_session)
 
     return Response(
@@ -85,7 +104,7 @@ def api_archive_news():
 
 
 def main():
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=8080, debug=True, use_reloader=False)
 
 
 if __name__ == '__main__':
