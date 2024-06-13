@@ -2,19 +2,17 @@ import os
 import json
 import pathlib
 
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 from dotenv import load_dotenv
 from flask import Flask, Response
 from flask_cors import CORS
 from sentence_transformers import SentenceTransformer
-from apscheduler.schedulers.background import BackgroundScheduler
-import atexit
-
 
 from data.db_session import create_session, global_init
 from data.managers import NewsManager
-
+from duplicate_filter.duplicate_filter import DuplicateFilter
 from parser.parser import Parser 
-from data.models import News
 from summarizer.summarizer import Summarizer
 
 load_dotenv()
@@ -24,6 +22,7 @@ print(catalogue, api_key)
 BASE_DIR = pathlib.Path(__file__).parent
 global_init('data/local_database.sqlite3')
 app = Flask(__name__)
+CORS(app)
 news_manager = NewsManager()
 summarizer = Summarizer(catalogue, api_key)
 duplicate_filter = DuplicateFilter()
@@ -37,7 +36,6 @@ def scheduled_parser():
     db_session = create_session()
     try:
         parse.upload_news_to_database(db_session)
-        
         db_session.commit()
     except Exception as e:
         db_session.rollback()
