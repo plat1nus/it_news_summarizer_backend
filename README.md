@@ -1,10 +1,19 @@
-# How to run backend
+# How to launch backend side of "AI News Aggregator"
 
 1. Clone repository
+
 2. Start terminal
-3. Create venv: ```python3 -m venv venv```
-4. Start venv: ```source venv/bin/activate```
-5. Download dependencies; ```python3 -m pip install -r requirements.txt```
-6. Go to ```src``` folder with ```cd``` command
-7. Use ```export PYTHONPATH=$(pwd)```
-8. Run server: ```python3 main.py```
+
+3. Using ```cd``` command, go to ```it_news_summarizer_backend``` folder
+
+4. Create venv: ```python3 -m venv venv```
+
+5. Start venv: ```source venv/bin/activate```
+
+6. Download dependencies: ```pip install -r requirements.txt```
+
+7. Go to ```src``` folder with ```cd``` command
+
+8. Use ```export PYTHONPATH=$(pwd)``` ( only if running on UNIX OS system: Linux/MacOS )
+
+9. Run server: ```python3 main.py```
