@@ -1,6 +1,8 @@
+import os
 import json
 import pathlib
 
+from dotenv import load_dotenv
 from flask import Flask, Response
 from flask_cors import CORS
 from sentence_transformers import SentenceTransformer
@@ -11,12 +13,16 @@ from duplicate_filter.duplicate_filter import DuplicateFilter
 from parser.parser import Parser
 from summarizer.summarizer import Summarizer
 
+load_dotenv()
+catalogue = os.getenv('CATALOGUE', 'invalidcatalogue')
+api_key = os.getenv('API_KEY', 'invalidapikey')
+print(catalogue, api_key)
 BASE_DIR = pathlib.Path(__file__).parent
 global_init('data/local_database.sqlite3')
 app = Flask(__name__)
 CORS(app)
 news_manager = NewsManager()
-summarizer = Summarizer()
+summarizer = Summarizer(catalogue, api_key)
 duplicate_filter = DuplicateFilter()
 model = SentenceTransformer('all-distilroberta-v1')
 
