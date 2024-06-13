@@ -49,7 +49,7 @@ def parse_rbc() -> List[News]:
         link = new['href']
         text, pub_time = get_rbc_news_text_and_time(link)
         
-        news_item = News(source="RBC", sourceLink=link, title=title, summary=text, timestamp=pub_time)
+        news_item = News(source="РБК", sourceLink=link, title=title, summary=text, timestamp=pub_time)
         news_list.append(news_item)
 
     return news_list

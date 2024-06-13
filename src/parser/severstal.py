@@ -4,8 +4,13 @@ import re
 
 from bs4 import BeautifulSoup
 import requests
+import urllib3
+import warnings
 
 from data.models import News
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+warnings.simplefilter('ignore', urllib3.exceptions.InsecureRequestWarning)
 
 
 def get_new_text_time(article_url: str) -> Tuple[str, datetime]:
@@ -58,7 +63,7 @@ def parse_severstal() -> List[News]:
     for new in news:
         links = new.find_all('a', class_='news-list-card')
         for link in links:
-            title = link.find(class_='h-3 news-list-card__title').text
+            title = link.find(class_='h-3 news-list-card__title').text.strip()
             href = link['href']
             if not href.startswith('https://'):
                 href = 'https://www.severstal.com/' + href
@@ -80,7 +85,7 @@ def parse_severstal() -> List[News]:
                 print(f'Error fetching the URL {href}: {e}')
                 continue
 
-            news_item = News(source="Severstal", sourceLink=href, title=title, summary=text, timestamp=pub_time)
+            news_item = News(source="Северсталь", sourceLink=href, title=title, summary=text, timestamp=pub_time)
             news_list.append(news_item)
 
     return news_list
