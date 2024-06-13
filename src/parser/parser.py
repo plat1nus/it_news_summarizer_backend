@@ -1,10 +1,10 @@
 from time import time
+from typing import List
 
 import sys 
 sys.path.append("..")
 
 from summarizer.summarizer import Summarizer
-from duplicate_filter.duplicate_filter import DuplicateFilter
 
 from .rbc import parse_rbc 
 from .cnews import parse_cnews
@@ -17,18 +17,16 @@ from sqlalchemy.orm import Session
 
 
 class Parser:
-    def __init__(self, summarizer: Summarizer, duplicate_filter: DuplicateFilter) -> None:
-        self.__duplicate_filter = duplicate_filter
-        self.__summarizer = summarizer
-        self.__news = []
+    def __init__(self, summarizer: Summarizer) -> None:
+        self.summarizer = summarizer
+        self.news = []
 
-    def parse_news(self) -> None:
+    def parse_news(self):
         result = []
         now = time()
-        
-        # rbc_news = parse_rbc()
-        # print('rbc', time() - now)
-        # result.extend(rbc_news)
+        rbc_news = parse_rbc()
+        print('rbc', time() - now)
+        result.extend(rbc_news)
 
         # interfax_news = parse_interfax()
         # print('interfax', time() - now)
@@ -38,29 +36,28 @@ class Parser:
         # print('cnews', time() - now)
         # result.extend(cnews_news)
 
-        # techcrunch_news = parse_techcrunch()
-        # print('techcrunch', time() - now)
-        # result.extend(techcrunch_news)
+        techcrunch_news = parse_techcrunch()
+        print('techcrunch', time() - now)
+        result.extend(techcrunch_news)
 
-        # # TODO: Fix parsing errors
-        # try:
-        #     severstal_news = parse_severstal()
-        #     print('severstal', time() - now)
-        #     result.extend(severstal_news)
-        # except Exception as e:
-        #     print(f'[ERROR] :: {e}')
+        # severstal_news = parse_severstal()
+        # print('severstal', time() - now)
+        # result.extend(severstal_news)
 
         print(f'[INFO] :: Parsed {len(result)} news')
-        self.__news = result
+        self.news = result
 
     def upload_news_to_database(self, db_session: Session) -> None:
-        db_session.bulk_save_objects(self.__news)
+        db_session.bulk_save_objects(self.news)
         db_session.commit()
-        print(f'[INFO] :: Added {len(self.__news)} news to DB')
 
-    def process_news(self, db_session: Session) -> None:
-        db_news = db_session.query(News).all()
-        self.__news = self.__duplicate_filter.clear_duplicates(db_news=db_news, parsed_news=self.__news)
+    def process_news(self) -> None:
+        for i in range(len(self.news)):
+            self.news[i].summary = self.summarizer.summarize(self.news[i].summary)
+            print(self.news[i])
 
-        for i in range(len(self.__news)):
-            self.__news[i].summary = self.__summarizer.summarize(self.__news[i].summary)
+    
+
+if __name__ == '__main__':
+    parse = Parser(Summarizer)
+    parse.parse_news()

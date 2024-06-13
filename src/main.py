@@ -1,55 +1,65 @@
-import json
+from http import HTTPStatus
 import pathlib
 
-from flask import Flask, Response
-from flask_cors import CORS
+from flask import Blueprint, Flask
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 
 from data.db_session import create_session, global_init
 from data.managers import NewsManager
-from duplicate_filter.duplicate_filter import DuplicateFilter
-from parser.parser import Parser
+
+from parser.parser import Parser 
+from data.models import News
 from summarizer.summarizer import Summarizer
 
 BASE_DIR = pathlib.Path(__file__).parent
 global_init('data/local_database.sqlite3')
 app = Flask(__name__)
-CORS(app)
 news_manager = NewsManager()
-summarizer = Summarizer()
-duplicate_filter = DuplicateFilter()
+parse = Parser(Summarizer)
+
+def scheduled_parser():
+    parse.parse_news()
+    parse.process_news()
+    db_session = create_session()
+    try:
+        parse.upload_news_to_database(db_session)
+        
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        print(f"Ошибка при добавлении новостей в базу данных: {e}")
+    finally:
+        db_session.close()
+
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=scheduled_parser, trigger="interval", seconds=30)
+scheduler.start()
+
+# Закрываем планировщик при завершении работы
+atexit.register(lambda: scheduler.shutdown())
+
+
+@app.route('/api/v1/ping')
+def ping():
+    return '', HTTPStatus.OK
 
 
 @app.route('/api/v1/recent_news')
 def api_recent_news():
     db_session = create_session()
-    parser = Parser(summarizer=summarizer, duplicate_filter=duplicate_filter)
-    parser.parse_news()
-    parser.process_news(db_session)
-    parser.upload_news_to_database(db_session)
     recent_news = news_manager.get_recent_news(db_session, limit=20)
-    
-    return Response(
-        mimetype='application/json',
-        response=json.dumps([it.serialize() for it in recent_news]),
-        status=200,
-    )
+    jsonified = [it.jsonify() for it in recent_news]
+    return jsonified, HTTPStatus.OK
 
 
 @app.route('/api/v1/archive_news')
 def api_archive_news():
-    print('[INFO] :: New request')
     db_session = create_session()
-    parser = Parser(summarizer=summarizer, duplicate_filter=duplicate_filter)
-    parser.parse_news()
-    parser.process_news(db_session)
-    parser.upload_news_to_database(db_session)
     archive_news = news_manager.get_archive_news(db_session)
-
-    return Response(
-        mimetype='application/json',
-        response=json.dumps([it.serialize() for it in archive_news]),
-        status=200
-    )
+    jsonified = [it.jsonify() for it in archive_news]
+    return jsonified, HTTPStatus.OK
 
 
 def main():
