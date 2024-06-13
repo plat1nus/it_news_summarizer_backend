@@ -50,25 +50,25 @@ class Parser:
         print('rbc', time() - now)
         result.extend(rbc_news)
 
-        # interfax_news = parse_interfax()
-        # print('interfax', time() - now)
-        # result.extend(interfax_news)
+        interfax_news = parse_interfax()
+        print('interfax', time() - now)
+        result.extend(interfax_news)
 
-        # cnews_news = parse_cnews()
-        # print('cnews', time() - now)
-        # result.extend(cnews_news)
+        cnews_news = parse_cnews()
+        print('cnews', time() - now)
+        result.extend(cnews_news)
 
-        # techcrunch_news = parse_techcrunch()
-        # print('techcrunch', time() - now)
-        # result.extend(techcrunch_news)
+        techcrunch_news = parse_techcrunch()
+        print('techcrunch', time() - now)
+        result.extend(techcrunch_news)
 
-        # # TODO: Fix parsing errors
-        # try:
-        #     severstal_news = parse_severstal()
-        #     print('severstal', time() - now)
-        #     result.extend(severstal_news)
-        # except Exception as e:
-        #     print(f'[ERROR] :: {e}')
+        # TODO: Fix parsing errors
+        try:
+            severstal_news = parse_severstal()
+            print('severstal', time() - now)
+            result.extend(severstal_news)
+        except Exception as e:
+            print(f'[ERROR] :: {e}')
 
         print(f'[INFO] :: Parsed {len(result)} news')
         self.__news = result

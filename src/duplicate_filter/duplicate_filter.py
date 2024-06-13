@@ -10,11 +10,28 @@ class DuplicateFilter:
     ''' Class used to remove duplicate news from currently parsed news, using news already in database '''
 
     @staticmethod
+<<<<<<< HEAD
     def clear_duplicates(model:SentenceTransformer, parsed_news: List[News], db_session: Session) -> List[News]:
         # db_news = db_session.query(News).all()
         # db_titles = [it.title for it in db_news]
         # new_news = [it for it in parsed_news if it.title not in db_titles]
         # print(len(new_news), ':: new news')
+=======
+    def clear_duplicates(parsed_news: List[News], db_session: Session) -> List[News]:
+        db_news = db_session.query(News).all()
+        seen = set()
+        unique_parsed_news = []
+
+        for news in parsed_news:
+            if news.title in seen:
+                continue
+            seen.add(news.title)
+            unique_parsed_news.append(news)
+        
+        db_titles = [it.title for it in db_news]
+        new_news = [it for it in unique_parsed_news if it.title not in db_titles]
+        print(len(new_news), ':: new news')
+>>>>>>> dcee9a9ddcbcfadf0eb349e36f28bc1430e0277f
 
         # TODO: Fix errors connected to Intel processor interoperability with SentenceTransformer library
         embeddings = [model.encode([it.summary for it in parsed_news], convert_to_tensor=True)]

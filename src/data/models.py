@@ -59,7 +59,7 @@ class News(SqlAlchemyBase):
         # W: amount of words in the article
         # N: amount of keywords in title
 
-        I = self.__text_keyword_weight_and_count(article_text=self.summary)[0]
+        I = self.__text_keyword_weight_and_count(text=self.summary)[0]
         W = self.__word_counter(article_text=self.summary)
         N = self.__text_keyword_weight_and_count(text=self.title)[1]
 
