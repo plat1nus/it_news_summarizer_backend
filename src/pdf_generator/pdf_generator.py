@@ -1,14 +1,10 @@
-from pathlib import Path
-import os
+from datetime import date, timedelta
 import sys
 from typing import List
 
 sys.path.append("..")
 
-import pdfkit
-
 from data.models import News
-
 
 BASE_TEMPLATE = '''
     <!DOCTYPE html>
@@ -23,6 +19,7 @@ BASE_TEMPLATE = '''
         }
         h1 {
             text-align: center;
+            margin-bottom: 12px;
         }
         .news {
             margin-bottom: 20px;
@@ -47,15 +44,35 @@ BASE_TEMPLATE = '''
     </head>
     <body>
     <div id="reportbox">
-    <h1>Новостной дайджест</h1>
 '''
+
+
+def get_closest_monday() -> date:
+    date_today = date.today()
+    for _ in range(8):
+        if date_today.weekday() == 0:
+            return date_today
+        date_today -= timedelta(days=1)
+    raise ValueError('[ERROR] :: No mondays in previous 8 days')
+
+
+def format_date(dt: date) -> str:
+    return f'{dt.day:02}.{dt.month:02}.{dt.year:04}'
 
 
 class PDFGenerator:
     @staticmethod
     def generate(news_list: List[News]) -> bytes:
+        end = get_closest_monday()
+        start = end - timedelta(days=7)
 
         template = BASE_TEMPLATE[::]
+
+        template += (
+            f'''
+            <h1>Новостной дайджест {format_date(start)} - {format_date(end)}<br></h1>
+            '''
+        )
 
         for news in news_list:
             template += f'''
