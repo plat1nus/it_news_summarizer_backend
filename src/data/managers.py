@@ -7,7 +7,9 @@ from .models import News
 
 
 class NewsManager:
-    def __get_data(
+    ''' Model Manager for News Model. Used to fetch data from database '''
+
+    def __get_news_query(
         self,
         db_session: Session,
     ) -> Query:
@@ -44,6 +46,9 @@ class NewsManager:
         return (
             self
                 .__get_sorted_news(db_session)
+                
+                # Commented because theree are no news parsed 30 days ago.
+                # TODO: Uncomment when deploying to production
                 # .filter(News.timestamp < datetime.now() - timedelta(days=30))
             ).all()
     
@@ -53,11 +58,11 @@ class NewsManager:
         limit: int = 10,
     ) -> List[News]:
         current_monday = self.__get_closest_past_monday()
-        prev_monday = current_monday - timedelta(days=7)
+        previous_monday = current_monday - timedelta(days=7)
 
         return (
-            self.__get_data(db_session)
-                .filter(News.timestamp_parse >= prev_monday, News.timestamp_parse <= current_monday)
+            self.__get_news_query(db_session)
+                .filter(News.timestamp_parse >= previous_monday, News.timestamp_parse <= current_monday)
                 .order_by(News.power.desc(), News.timestamp.desc())
                 .limit(limit)
                 .all()

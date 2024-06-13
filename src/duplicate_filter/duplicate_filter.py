@@ -7,6 +7,7 @@ from data.models import News
 
 
 class DuplicateFilter:
+    ''' Class used to remove duplicate news from currently parsed news, using news already in database '''
 
     @staticmethod
     def clear_duplicates(parsed_news: List[News], db_session: Session) -> List[News]:
@@ -14,6 +15,8 @@ class DuplicateFilter:
         db_titles = [it.title for it in db_news]
         new_news = [it for it in parsed_news if it.title not in db_titles]
         print(len(new_news), ':: new news')
+
+        # TODO: Fix errors connected to Intel processor interoperability with SentenceTransformer library
         # embeddings = [model.encode([it.summary for it in parsed_news], convert_to_tensor=True)]
         # cosine_scores = util.pytorch_cos_sim(embeddings, embeddings)
         # threshold = 0.7

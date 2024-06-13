@@ -18,6 +18,8 @@ from .severstal import parse_severstal
 
 
 class Parser:
+    ''' Aggregator of all parsing functions. Used to gather all news together and process them '''
+
     def __init__(self, summarizer: Summarizer, duplicate_filter: DuplicateFilter) -> None:
         self.__duplicate_filter = duplicate_filter
         self.__summarizer = summarizer

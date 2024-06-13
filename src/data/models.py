@@ -28,33 +28,40 @@ class News(SqlAlchemyBase):
 
         return num_words
 
-    def __keyword_counter(self, text: str):
+    def __text_keyword_weight_and_count(self, text: str):
         NORMAL_WEIGHT = 1
         HIGH_WEIGHT = 30
         HIGH_WEIGHT_KEYWORDS_FILENAME = f'{Path(__file__).parent}/keywords/high_weight_keywords.txt'
         NORMAL_WEIGHT_KEYWORDS_FILENAME = f'{Path(__file__).parent}/keywords/normal_weight_keywords.txt'
 
-        with open(NORMAL_WEIGHT_KEYWORDS_FILENAME, 'r', encoding='utf-8') as file:
-            keywordslist = [line.strip() for line in file]
+        with open(NORMAL_WEIGHT_KEYWORDS_FILENAME) as file:
+            keywordslist = [line.strip().lower() for line in file]
 
-        with open(HIGH_WEIGHT_KEYWORDS_FILENAME, 'r', encoding='utf-8') as file:
-            topkeywordslist = [line.strip() for line in file]
+        with open(HIGH_WEIGHT_KEYWORDS_FILENAME) as file:
+            topkeywordslist = [line.strip().lower() for line in file]
         
         weight = 0
+        counter = 0
 
         words = text.split()
         for word in words:
-            if word in keywordslist:
-                weight += NORMAL_WEIGHT
             if word in topkeywordslist:
                 weight += HIGH_WEIGHT
+                counter += 1
+            elif word in keywordslist:
+                weight += NORMAL_WEIGHT
+                counter += 1
         
-        return weight
+        return weight, counter
     
     def calculate_power(self) -> float:
-        I = self.__word_counter(article_text=self.summary)
-        W = self.__keyword_counter(text=self.summary)
-        N = self.__keyword_counter(text=self.title)
+        # I: sum of weight of all keywords in the article
+        # W: amount of words in the article
+        # N: amount of keywords in title
+
+        I = self.__text_keyword_weight_and_count(article_text=self.summary)[0]
+        W = self.__word_counter(article_text=self.summary)
+        N = self.__text_keyword_weight_and_count(text=self.title)[1]
 
         power = (I ** 2 / W) * (2 ** N)
         self.power = power

@@ -8,7 +8,6 @@ import atexit
 from dotenv import load_dotenv
 from flask import Flask, Response, send_file
 from flask_cors import CORS
-# from sentence_transformers import SentenceTransformer
 
 from data.db_session import create_session, global_init
 from data.managers import NewsManager
@@ -18,31 +17,34 @@ from parser.parser import Parser
 from pdf_generator.pdf_generator import PDFGenerator
 from summarizer.summarizer import Summarizer
 
+# ===
+# Backend Setup
+# ===
+BASE_DIR = pathlib.Path(__file__).parent
+PARSER_SPAN_12_HOURS_IN_SECONDS = 60 * 60 * 12
+
 load_dotenv()
 catalogue = os.getenv('CATALOGUE', 'invalidcatalogue')
 api_key = os.getenv('API_KEY', 'invalidapikey')
-print(catalogue, api_key)
-BASE_DIR = pathlib.Path(__file__).parent
-global_init('data/local_database.sqlite3')
+
+global_init(f'{BASE_DIR}/data/local_database.sqlite3')
 app = Flask(__name__)
 CORS(app)
-news_manager = NewsManager()
+
 summarizer = Summarizer(catalogue, api_key)
+news_manager = NewsManager()
 duplicate_filter = DuplicateFilter()
-# model = SentenceTransformer('all-distilroberta-v1')
-parse = Parser(summarizer=summarizer, duplicate_filter=duplicate_filter)
+parsing_job_runner = Parser(summarizer=summarizer, duplicate_filter=duplicate_filter)
 pdfgenerator = PDFGenerator()
-PARSER_SPAN_12_HOURS_IN_SECONDS = 60 * 60 * 12
 
 
 def scheduled_parser():
     db_session = create_session()
-    parse.parse_news()
-    # parse.process_news(db_session=db_session, model=model)
-    parse.process_news(db_session=db_session)
+    parsing_job_runner.parse_news()
+    parsing_job_runner.process_news(db_session=db_session)
     db_session = create_session()
     try:
-        parse.upload_news_to_database(db_session)
+        parsing_job_runner.upload_news_to_database(db_session)
         db_session.commit()
     except Exception as e:
         db_session.rollback()

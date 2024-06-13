@@ -47,7 +47,7 @@ BASE_TEMPLATE = '''
 '''
 
 
-def get_closest_monday() -> date:
+def get_closest_past_monday() -> date:
     date_today = date.today()
     for _ in range(8):
         if date_today.weekday() == 0:
@@ -61,9 +61,11 @@ def format_date(dt: date) -> str:
 
 
 class PDFGenerator:
+    ''' PDFGenerator is used to generate html template for news digest '''
+    
     @staticmethod
     def generate(news_list: List[News]) -> bytes:
-        end = get_closest_monday()
+        end = get_closest_past_monday()
         start = end - timedelta(days=7)
 
         template = BASE_TEMPLATE[::]
