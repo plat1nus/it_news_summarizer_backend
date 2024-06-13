@@ -11,28 +11,12 @@ from duplicate_filter.duplicate_filter import DuplicateFilter
 
 from .rbc import parse_rbc 
 from .cnews import parse_cnews
+from .cnewscorp import parse_cnewscorp
 from data.models import News
 from .interfax import parse_interfax
 from .techcrunch import parse_techcrunch
 from .severstal import parse_severstal
-
-parsers_list = [
-    'cnews',
-    'interfax',
-    'rbc',
-    'techcrunch(delete this i might)'
-    ''
-]
-
-parsers_todo_list = [
-    'cnewscorp',
-    'evraz',
-    'komersant',
-    'rusbase',
-    'tadviser',
-    'vedomosti'
-]
-
+from .tadviser import parse_tadviser
 
 class Parser:
     ''' Aggregator of all parsing functions. Used to gather all news together and process them '''
@@ -58,9 +42,18 @@ class Parser:
         print('cnews', time() - now)
         result.extend(cnews_news)
 
-        techcrunch_news = parse_techcrunch()
-        print('techcrunch', time() - now)
-        result.extend(techcrunch_news)
+        cnewscorp_news = parse_cnewscorp()
+        print('cnews corp', time() - now)
+        result.extend(cnewscorp_news)
+
+        tadviser_news = parse_tadviser()
+        print('tadviser', time() - now)
+        result.extend(cnewscorp_news)
+
+        # TODO: If techcrunch necessary, uncomment
+        # techcrunch_news = parse_techcrunch()
+        # print('techcrunch', time() - now)
+        # result.extend(techcrunch_news)
 
         # TODO: Fix parsing errors
         try:

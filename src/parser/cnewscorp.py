@@ -74,7 +74,7 @@ def parse_other_news(soup: BeautifulSoup, news_list: List[News]) -> List[News]:
 
 
 
-def parse_cnews() -> List[News]:
+def parse_cnewscorp() -> List[News]:
     news_list = []
 
     req = requests.get('https://corp.cnews.ru/')
@@ -90,7 +90,7 @@ def parse_cnews() -> List[News]:
 
 
 def test() -> None: 
-    for new in parse_cnews():
+    for new in parse_cnewscorp():
         print(new.timestamp, new.title, new.summary)
 
 
