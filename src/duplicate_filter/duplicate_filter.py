@@ -12,8 +12,17 @@ class DuplicateFilter:
     @staticmethod
     def clear_duplicates(parsed_news: List[News], db_session: Session) -> List[News]:
         db_news = db_session.query(News).all()
+        seen = set()
+        unique_parsed_news = []
+
+        for news in parsed_news:
+            if news.title in seen:
+                continue
+            seen.add(news.title)
+            unique_parsed_news.append(news)
+        
         db_titles = [it.title for it in db_news]
-        new_news = [it for it in parsed_news if it.title not in db_titles]
+        new_news = [it for it in unique_parsed_news if it.title not in db_titles]
         print(len(new_news), ':: new news')
 
         # TODO: Fix errors connected to Intel processor interoperability with SentenceTransformer library
