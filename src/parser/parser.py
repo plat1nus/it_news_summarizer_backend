@@ -1,10 +1,13 @@
 from time import time
-from typing import List
 
 import sys 
 sys.path.append("..")
 
+from sentence_transformers import SentenceTransformer
+from sqlalchemy.orm import Session
+
 from summarizer.summarizer import Summarizer
+from duplicate_filter.duplicate_filter import DuplicateFilter
 
 from .rbc import parse_rbc 
 from .cnews import parse_cnews
@@ -13,17 +16,17 @@ from .interfax import parse_interfax
 from .techcrunch import parse_techcrunch
 from .severstal import parse_severstal
 
-from sqlalchemy.orm import Session
-
 
 class Parser:
-    def __init__(self, summarizer: Summarizer) -> None:
-        self.summarizer = summarizer
-        self.news = []
+    def __init__(self, summarizer: Summarizer, duplicate_filter: DuplicateFilter) -> None:
+        self.__duplicate_filter = duplicate_filter
+        self.__summarizer = summarizer
+        self.__news = []
 
-    def parse_news(self):
+    def parse_news(self) -> None:
         result = []
         now = time()
+        
         rbc_news = parse_rbc()
         print('rbc', time() - now)
         result.extend(rbc_news)
@@ -36,28 +39,33 @@ class Parser:
         # print('cnews', time() - now)
         # result.extend(cnews_news)
 
-        techcrunch_news = parse_techcrunch()
-        print('techcrunch', time() - now)
-        result.extend(techcrunch_news)
+        # techcrunch_news = parse_techcrunch()
+        # print('techcrunch', time() - now)
+        # result.extend(techcrunch_news)
 
-        # severstal_news = parse_severstal()
-        # print('severstal', time() - now)
-        # result.extend(severstal_news)
+        # # TODO: Fix parsing errors
+        # try:
+        #     severstal_news = parse_severstal()
+        #     print('severstal', time() - now)
+        #     result.extend(severstal_news)
+        # except Exception as e:
+        #     print(f'[ERROR] :: {e}')
 
         print(f'[INFO] :: Parsed {len(result)} news')
-        self.news = result
+        self.__news = result
 
     def upload_news_to_database(self, db_session: Session) -> None:
-        db_session.bulk_save_objects(self.news)
+        db_session.bulk_save_objects(self.__news)
         db_session.commit()
+        print(f'[INFO] :: Added {len(self.__news)} news to DB')
 
-    def process_news(self) -> None:
-        for i in range(len(self.news)):
-            self.news[i].summary = self.summarizer.summarize(self.news[i].summary)
-            print(self.news[i])
+    def process_news(self, db_session: Session, model: SentenceTransformer, threshold: float = 0.2, limit: int = 5) -> None:
 
-    
+        self.__news = self.__duplicate_filter.clear_duplicates(parsed_news=self.__news, db_session=db_session, model=model)
+        self.__news = [news for news in self.__news if news.calculate_power() >= threshold]
+        self.__news.sort(key=lambda news: news.calculate_power(), reverse=True)
+        self.__news = self.__news[:limit]
+        print([news.calculate_power() for news in self.__news])
 
-if __name__ == '__main__':
-    parse = Parser(Summarizer)
-    parse.parse_news()
+        for i in range(len(self.__news)):
+            self.__news[i].summary = self.__summarizer.summarize(self.__news[i].summary)
