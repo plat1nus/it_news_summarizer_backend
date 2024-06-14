@@ -12,7 +12,7 @@
 
 6. Download dependencies: ```pip install -r requirements.txt```
 
-7. Go to ```src``` folder with ```cd``` command
+7. Go to ```src``` folder using ```cd``` command ( for example: ```cd src``` )
 
 8. Use ```export PYTHONPATH=$(pwd)``` ( only if running on UNIX OS system: Linux/MacOS )
 
