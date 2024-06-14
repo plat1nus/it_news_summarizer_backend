@@ -94,32 +94,16 @@ BASE_TEMPLATE = '''
 '''
 
 
-def get_closest_past_monday() -> date:
-    date_today = date.today()
-    for _ in range(8):
-        if date_today.weekday() == 0:
-            return date_today
-        date_today -= timedelta(days=1)
-    raise ValueError('[ERROR] :: No mondays in previous 8 days')
-
-
-def format_date(dt: date) -> str:
-    return f'{dt.day:02}.{dt.month:02}.{dt.year:04}'
-
-
 class PDFGenerator:
     ''' PDFGenerator is used to generate html template for news digest '''
     
     @staticmethod
-    def generate(news_list: List[News]) -> bytes:
-        end = get_closest_past_monday()
-        start = end - timedelta(days=7)
-
+    def generate(news_list: List[News], title: str) -> bytes:
         template = BASE_TEMPLATE[::]
 
         template += (
             f'''
-            <h1><i>НЛМК. Новостной дайджест {format_date(start)} - {format_date(end)}</i><br></h1>
+            <h1><i>{title}</i><br></h1>
             <hr>
             '''
         )

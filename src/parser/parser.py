@@ -3,7 +3,7 @@ from time import time
 import sys 
 sys.path.append("..")
 
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 from sqlalchemy.orm import Session
 
 from summarizer.summarizer import Summarizer
@@ -16,7 +16,7 @@ from .interfax import parse_interfax
 from .techcrunch import parse_techcrunch
 from .severstal import parse_severstal
 from .tadviser import parse_tadviser
-from .kommersant import parse_km
+from .kommersant import parse_kommersant
 
 class Parser:
     ''' Aggregator of all parsing functions. Used to gather all news together and process them '''
@@ -37,7 +37,7 @@ class Parser:
         print('rbc', time() - now)
         result.extend(rbc_news)
 
-        km_news = parse_km()
+        km_news = parse_kommersant()
         print('kommersant', time() - now)
         result.extend(km_news)
 
@@ -80,8 +80,8 @@ class Parser:
         db_session.commit()
         print(f'[INFO] :: Added {len(self.__news)} news to DB')
 
-    def process_news(self, model: SentenceTransformer, db_session: Session, threshold: float = 0.2, limit: int = 5) -> None:
-        self.__news = self.__duplicate_filter.clear_duplicates(parsed_news=self.__news, db_session=db_session, model=model)
+    def process_news(self, db_session: Session, threshold: float = 0.2, limit: int = 5) -> None:
+        self.__news = self.__duplicate_filter.clear_duplicates(parsed_news=self.__news, db_session=db_session)
         # self.__news = self.__duplicate_filter.clear_duplicates(parsed_news=self.__news, db_session=db_session)
         self.__news = [news for news in self.__news if news.calculate_power() >= threshold]
         self.__news.sort(key=lambda news: news.calculate_power(), reverse=True)

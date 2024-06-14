@@ -31,7 +31,7 @@ def get_text(article_url: str) -> str:
     return result
 
 
-def parse_km() -> List[News]:
+def parse_kommersant() -> List[News]:
     news_list = []
 
     req = requests.get('https://www.kommersant.ru/theme/2903')
@@ -52,12 +52,7 @@ def parse_km() -> List[News]:
             pub_time = dateparser.parse(pub_time_str)
         text = get_text(href)
         
-        news_item = News(source="Kommersant", sourceLink=href, title=title, summary=text, timestamp=pub_time)
+        news_item = News(source="Коммерсант", sourceLink=href, title=title, summary=text, timestamp=pub_time)
         news_list.append(news_item)
 
     return news_list
-
-
-for new in parse_km():
-    print(new.title, new.timestamp, new.summary)
-    break

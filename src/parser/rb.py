@@ -43,7 +43,7 @@ def parse_main_news(soup: BeautifulSoup, news_list: List[News]) -> List[News]:
     title_main_news = main_news.text
     href_main_news = main_news['href']
     text, pub_time = get_cnews_news_text_and_time(href_main_news)
-    news_list.append(News(source="CNews corp", sourceLink=href_main_news, title=title_main_news, summary=text, timestamp=pub_time))
+    news_list.append(News(source="CNews Corp", sourceLink=href_main_news, title=title_main_news, summary=text, timestamp=pub_time))
 
     other_news = top_news.find('ul')
 
@@ -52,7 +52,7 @@ def parse_main_news(soup: BeautifulSoup, news_list: List[News]) -> List[News]:
         title = a.text
 
         text, pub_time = get_cnews_news_text_and_time(href)
-        news_list.append(News(source="CNews corp", sourceLink=href, title=title, summary=text, timestamp=pub_time))
+        news_list.append(News(source="CNews Corp", sourceLink=href, title=title, summary=text, timestamp=pub_time))
 
     return news_list 
 

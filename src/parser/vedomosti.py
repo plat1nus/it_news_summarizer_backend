@@ -51,7 +51,7 @@ def parse_vedomosti() -> List[News]:
 
             text = get_text(href)
             
-            news_item = News(source="Vedomosti", sourceLink=href, title=title, summary=text, timestamp=pub_time)
+            news_item = News(source="Ведомости", sourceLink=href, title=title, summary=text, timestamp=pub_time)
             news_list.append(news_item)
         break
 
