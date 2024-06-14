@@ -19,3 +19,5 @@
 9. Inside src folder, create ```.env``` file. Add YandexGPT **API_KEY** & **CATALOGUE** constants ( there is a default .env ONLY for testing purposes. !! DO NOT USE IN PRODUCTION !!)
 
 10. Run server: ```python3 main.py```
+
+## To launch frontend, see [Frontend Github repository](https://github.com/reproductionprohibited/it_news_summarizer_2.0)
