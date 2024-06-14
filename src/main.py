@@ -59,9 +59,12 @@ def scheduled_parser():
 
 
 scheduler = BackgroundScheduler()
+
 # For DEBUG
-# scheduler.add_job(func=scheduled_parser, trigger="interval", seconds=60 * 10)
-scheduler.add_job(func=scheduled_parser, trigger="interval", seconds=PARSER_SPAN_12_HOURS_IN_SECONDS)
+scheduler.add_job(func=scheduled_parser, trigger="interval", seconds=60 * 10)
+
+# FOR PRODUCTION
+# scheduler.add_job(func=scheduled_parser, trigger="interval", seconds=PARSER_SPAN_12_HOURS_IN_SECONDS)
 scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
 
