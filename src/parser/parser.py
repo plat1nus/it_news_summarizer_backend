@@ -11,12 +11,12 @@ from duplicate_filter.duplicate_filter import DuplicateFilter
 
 from .rbc import parse_rbc 
 from .cnews import parse_cnews
-from .cnewscorp import parse_cnewscorp
 from data.models import News
 from .interfax import parse_interfax
 from .techcrunch import parse_techcrunch
 from .severstal import parse_severstal
 from .tadviser import parse_tadviser
+from .kommersant import parse_km
 
 class Parser:
     ''' Aggregator of all parsing functions. Used to gather all news together and process them '''
@@ -27,6 +27,9 @@ class Parser:
         self.__news = []
 
     def parse_news(self) -> None:
+        """
+        cnews default, corp & import are parcing by one file because of similar html structure
+        """
         result = []
         now = time()
         
@@ -34,21 +37,33 @@ class Parser:
         print('rbc', time() - now)
         result.extend(rbc_news)
 
+        km_news = parse_km()
+        print('kommersant', time() - now)
+        result.extend(km_news)
+
         interfax_news = parse_interfax()
         print('interfax', time() - now)
         result.extend(interfax_news)
 
-        cnews_news = parse_cnews()
+        cnews_news = parse_cnews('https://www.cnews.ru/')
         print('cnews', time() - now)
         result.extend(cnews_news)
 
-        cnewscorp_news = parse_cnewscorp()
+        cnewscorp_news = parse_cnews('https://corp.cnews.ru/')
         print('cnews corp', time() - now)
         result.extend(cnewscorp_news)
 
+        cnews_import = parse_cnews('https://importfree.cnews.ru/')
+        print('cnews import', time() - now)
+        result.extend(cnews_import)
+
         tadviser_news = parse_tadviser()
         print('tadviser', time() - now)
-        result.extend(cnewscorp_news)
+        result.extend(tadviser_news)
+
+        severstal_news = parse_severstal()
+        print('severstal', time() - now)
+        result.extend(severstal_news)
 
         # TODO: If techcrunch necessary, uncomment
         # techcrunch_news = parse_techcrunch()
@@ -56,12 +71,6 @@ class Parser:
         # result.extend(techcrunch_news)
 
         # TODO: Fix parsing errors
-        try:
-            severstal_news = parse_severstal()
-            print('severstal', time() - now)
-            result.extend(severstal_news)
-        except Exception as e:
-            print(f'[ERROR] :: {e}')
 
         print(f'[INFO] :: Parsed {len(result)} news')
         self.__news = result
